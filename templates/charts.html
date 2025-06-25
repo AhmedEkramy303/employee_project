@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>body { font-family: sans-serif; background-color: #f4f7f6; margin: 20px; } .chart-container { width: 80%; max-width: 800px; margin: 40px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }</style>
+</head>
+<body>
+    <h1 style="text-align: center;">Employee Analytics Dashboard</h1>
+    <div class="chart-container"><h2>Employees per Department</h2><canvas id="departmentPieChart"></canvas></div>
+    <div class="chart-container"><h2>Monthly Attendance Overview</h2><canvas id="attendanceBarChart"></canvas></div>
+    <script>
+        const apiToken = localStorage.getItem('apiToken');
+        if (!apiToken) { alert('API Token not found. Please get a token and set it in localStorage using: localStorage.setItem("apiToken", "YOUR_TOKEN")'); }
+        const headers = { 'Authorization': `Token ${apiToken}` };
+        fetch('/api/charts/employees-per-department/', { headers })
+            .then(res => res.json()).then(data => {
+                new Chart(document.getElementById('departmentPieChart'), { type: 'pie', data: { labels: data.map(i => i.department), datasets: [{ data: data.map(i => i.employee_count), backgroundColor: data.map(() => `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 0.7)`) }] } });
+            }).catch(err => console.error('Error fetching department data:', err));
+        fetch('/api/charts/monthly-attendance/', { headers })
+            .then(res => res.json()).then(data => {
+                new Chart(document.getElementById('attendanceBarChart'), { type: 'bar', data: { labels: data.map(i => i.date), datasets: [ { label: 'Present', data: data.map(i => i.present_count), backgroundColor: 'rgba(75, 192, 192, 0.7)' }, { label: 'Absent', data: data.map(i => i.absent_count), backgroundColor: 'rgba(255, 99, 132, 0.7)' }, { label: 'Late', data: data.map(i => i.late_count), backgroundColor: 'rgba(255, 206, 86, 0.7)' } ] }, options: { scales: { x: { stacked: true }, y: { stacked: true } } } });
+            }).catch(err => console.error('Error fetching attendance data:', err));
+    </script>
+</body>
+</html>
